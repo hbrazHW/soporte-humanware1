@@ -329,27 +329,16 @@ const Navbar = (props) => {
                                                                 src={perfiRandom} alt="" />
                                                         </div>
                                                         <div className="col-10">
-                                                        
-                                                             {
-                                                            
-                                                               contacto.map(item=>(
-                                                                <h5 className="perfil-nombre m-0 fw-bolder">Nombre: {item.fullname}</h5>
-                                                                
+                                                             {contacto.map(item=>(
+                                                                <h5 className="perfil-nombre m-0 fw-bolder">{item.fullname}</h5>
                                                                 )) 
-                                                            }
-
-                                                            {
-                                                                contacto.map(item=>(
-                                                                    <p className="perfil-email m-0">email: {item.emailaddress1}</p>
-
-                                                                ))
-                                                            }   
-                                     
-
+                                                            }    
+                                                            <br></br>
+                                                            {contacto.map(item=>(
+                                                                    <p className="perfil-email m-0">{item.emailaddress1}</p>
+                                                                    )) }   
                                                         </div>
-
                                                     </div> 
-                                            
                                                     <div className="row border-bottom pb-1">
                                                         <div className="col-12 mt-2">
                                                         

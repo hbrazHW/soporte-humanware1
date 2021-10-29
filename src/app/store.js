@@ -20,6 +20,8 @@ import casosReducers from '../Redux/Caso'
 import actividadesReducers from '../Redux/Actividad'
 import contactosReducers from '../Redux/Contacto'
 import tareasReducers from '../Redux/Tareas'
+import asuntosReducers from '../Redux/Asuntos'
+
 
 const rootReducer = combineReducers({
    usuarios: usuariosReducer,
@@ -40,8 +42,11 @@ const rootReducer = combineReducers({
    bancos: BancosReducers,
    casos: casosReducers,
    actividades: actividadesReducers,
-   contactos: contactosReducers,
-   tareas: tareasReducers
+   contactos: contactosReducers, 
+   tareas: tareasReducers,
+   asunto: asuntosReducers,
+
+
 })
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -50,4 +55,3 @@ export default function generateStore(){
     const store = createStore( rootReducer, composeEnhancers( applyMiddleware(thunk) ) )
     return store
 }
-  

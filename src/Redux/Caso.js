@@ -54,14 +54,15 @@ export const obtenerCasos = (contactid) => async (dispatch) => {
     }
 }
 
-export const cargarCaso = (accountid, contactid, titulo, cliente, prioridad, asunto, descripcion,file, config) => async (dispatch) => {
+export const cargarCaso = (accountid, contactid, titulo, cliente, prioridad,fechaResolucion,descripcionResolucion, asunto, descripcion,file, config) => async (dispatch) => {
     dispatch({
         type: LOADING,
         resultadoCaso: 'LOADING'
     })
     try {
+      debugger;  
         const response = await axios.post(`${UrlApiDynamics}Casos?accountid=${accountid}&contactid=${contactid}&titulo=${titulo}
-            &cliente=${cliente.value}&prioridad=${prioridad.value}&descripcion=${descripcion}&asunto=${asunto.value}&cuit=${Entidad}`, file, config)
+            &cliente=${cliente.value}&prioridad=${prioridad.value}&descripcion=${descripcion}&fechaResolucion=${fechaResolucion}&descripcionResolucion=${descripcionResolucion}&asunto=${asunto.value}&cuit=${Entidad}`, file, config)
         dispatch({
             type: CARGA_CASOS_EXITO,
             ticket: response.data,

@@ -10,12 +10,16 @@ import { useSpring, animated } from 'react-spring'
 import { obtenerCasos, cargarCaso } from '../Redux/Caso'
 import Tabla from '../Components/Tabla'
 import { COLUMNS } from '../Tables/casosColumns'
+import { CASOSRESUELTOS } from '../Tables/casosResueltos'
 import { obtenerSocios } from '../Redux/Cuenta'
 import Select from 'react-select';
 import MultiStepProgressBar from './MultiStepProgressBar'
 import "react-step-progress-bar/styles.css";
 import { obtenerActividades } from '../Redux/Actividad'
+import { obtenerAsunto } from '../Redux/Asuntos'
 import { createContext } from 'react'
+import { UrlApiDynamics, Entidad } from '../Keys'
+
 
 const Inicio = (props) => {
     //Constantes
@@ -38,15 +42,18 @@ const Inicio = (props) => {
     const [cliente, setCliente] = React.useState('')
     const [sociosOpciones, setSociosOpciones] = React.useState([])
     const [socioid, setSocioid] = React.useState('')
-    const [prioridad, setPrioridad] = React.useState('')
     const [asunto, setAsunto] = React.useState('')
+    const [llamadaAsunto, setLlamadaAsunto] = React.useState(false)
     const [ticket, setTicket] = React.useState('')
     const [estado, setEstado] = React.useState('')
     const [descripcion, setDescripcion] = React.useState('')
+    const [descripciondelaresolucion,setDescripcionDeLaResolucion] = React.useState('')
     const [step, setStep] = React.useState(1);
     const [isFilePicked, setIsFilePicked] = React.useState(false);
     const [actividades, setActividades] = React.useState([])
     const [tareas, setTareas] = React.useState([])
+    const [opcionesAsunto, setOpcionesAsunto] = React.useState([]);
+  
 
     let docPendiente = []
 
@@ -61,6 +68,7 @@ const Inicio = (props) => {
     const casoIdSelector = useSelector(store => store.casos.casoId)
     const actividadesSelector = useSelector(store => store.actividades.actividades)
     const tareasSelector = useSelector(store => store.tareas.tareas)
+    const asuntoSelector = useSelector(store => store.asunto.asuntos)
 
     const fade = useSpring({
         from: {
@@ -70,7 +78,7 @@ const Inicio = (props) => {
             opacity: 1, delay: 1500
         },
     })
-
+    
     React.useEffect(async () => {
         if (activo) {
             if (casoSelector.length > 0 && llamadaCasos === true) {
@@ -104,6 +112,21 @@ const Inicio = (props) => {
                 // }
                 document.getElementById("spinner4").style.display = 'none';
             }
+
+            if(asuntoSelector.length > 0 && llamadaAsunto === true ){
+                completarOpcionesAsunto(asuntoSelector)
+            }else if(llamadaAsunto === false ){
+                obtenerAsuntos() 
+                setLlamadaAsunto(true)
+
+            }
+  
+            
+            if (asuntoSelector.length > 0){
+                 setAsunto(asuntoSelector)
+            }
+
+
 
             if (tareasSelector.length > 0) {
                 setTareas(tareasSelector)
@@ -141,7 +164,11 @@ const Inicio = (props) => {
         else {
             props.history.push('/login')
         }
-    }, [activo, casoSelector, sociosSelector, resultado, ticketSelector, casoIdSelector, actividadesSelector, actividades, tareasSelector])
+    }, [activo, casoSelector, sociosSelector, resultado, ticketSelector, casoIdSelector,asuntoSelector, actividadesSelector, actividades, tareasSelector])
+
+
+
+  
 
 
     const obtenerTodosCasos = async () => {
@@ -154,6 +181,12 @@ const Inicio = (props) => {
 
     const obtenerTodasActividades = async () => {
         dispatch(obtenerActividades())
+    }
+
+    const obtenerAsuntos  = async () => {
+        dispatch(obtenerAsunto())
+       
+       
     }
 
     const obtenerDocumentoSelect = async (e) => {
@@ -179,19 +212,29 @@ const Inicio = (props) => {
         setSociosOpciones(opcionesSocio)
     }
 
+    const completarOpcionesAsunto = (asunto) => {
+         const opcionesAsunto = [];
+            Array.from(asunto).forEach(item =>{
+            var opcion ={value: item.subjectid , label: item.title }
+            opcionesAsunto.push(opcion);
+
+         });
+    
+   setOpcionesAsunto(opcionesAsunto)
+
+
+   }
+
+
+
+
+
     const socioOnChange = (value) => {
         setSocioid(value)
     }
 
-    const prioridadOnChange = (value) => {
-        setPrioridad(value)
-    }
 
-    const asuntoOnChange = (value) => {
-        setAsunto(value)
-
-    }
-
+  
     const completarCamposCaso = (id) => {
         debugger;
         casos.filter(item => item.incidentid == id).map(item => {
@@ -205,8 +248,8 @@ const Inicio = (props) => {
                 setEstado("Caso Creado")
             }
             setDescripcion(item.description)
-            setPrioridad(completarPrioridad(item.prioritycode))
-            setAsunto(completarAsunto(item.subjectid))
+            setDescripcionDeLaResolucion(item.descripciondelaresolucion)
+            setAsunto(completarOpcionesAsunto(item.title))
             determinarEtapa(item.statuscode)
         })
     }
@@ -239,25 +282,6 @@ const Inicio = (props) => {
         }
     }
     
-    const asuntoOpciones = [
-        {value: '1', label: 'Consulta'},
-        {value: '2', label: 'Error'},
-        {value: '3', label: 'Nuevo Requerimiento'},
-    ]
-    
-    const completarAsunto = (valor) => {
-        switch (valor) {
-            case "1":
-                return { value: valor, label: 'Consulta'}
-            case "2":
-               return  {value: valor, label:'Error' }   
-            case"3":
-               return {value: valor, label: 'Nuevo Requerimiento'}   
-        }
-    }
-
-
-
 
 
     const handleSubmission = (e) => {
@@ -315,13 +339,39 @@ const Inicio = (props) => {
         e.preventDefault()
 
         if (titulo === '') {
-            // document.getElementById("titulo").classList.add('is-invalid')
-            setMensaje("El titulo es requerido!")
+            //document.getElementById("titulo").classList.add('is-invalid')
+             //setMensaje("El titulo es requerido!")
+             // setError(true)
+             // setShow(true)
+             return
+        } else {
+            //document.getElementById("titulo").classList.remove('is-invalid')
+        
+        
+        
+        if(descripcion ==='') {
+            //document.getElementById("descripcion").classList.add('is-invalid')
+            setMensaje("Descripcion Requerida!")
             setError(true)
             setShow(true)
             return
-        } else {
-            // document.getElementById("titulo").classList.remove('is-invalid')
+        }else{
+            //documen.getElementById("descripcion").classList.remove('is-invalid')
+        }
+
+        if(asunto === '') {
+            //document.getElementById("asunto").classList.add('is-invalid')
+            setMensaje("Asunto es Requerido!")
+            setError(true)
+            setShow(true)
+            return
+        }else{
+            //documen.getElementById("asunto").classList.remove('is-invalid')
+        }
+
+
+
+
         }
         if (cliente) {
             // document.getElementById("cliente").classList.add('is-invalid')
@@ -345,7 +395,7 @@ const Inicio = (props) => {
             },
         };
 
-        dispatch(cargarCaso(accountid, contactid, titulo, socioid, prioridad,asunto, descripcion, formData, config))
+        dispatch(cargarCaso(accountid, contactid, titulo, socioid,asunto, descripcion,descripciondelaresolucion, formData, config))
         setLoading(true)
         setMensaje("Cargando...")
         setShow(true)
@@ -360,9 +410,9 @@ const Inicio = (props) => {
     const limpiarForm = () => {
         setTitulo('')
         setSocioid('')
-        setPrioridad('')
         setAsunto('')
         setDescripcion('')
+        setDescripcionDeLaResolucion('')
         setTicket('')
         setStep(1)
     }
@@ -397,7 +447,7 @@ const Inicio = (props) => {
         setSelectedFiles(event.target.files)
         setIsFilePicked(true);
     };
-
+    
 
     return (
         <animated.div className="container min-vh-100" style={fade}>
@@ -596,7 +646,7 @@ const Inicio = (props) => {
                     <div className="contenedor-spinner" id="spinner2">
                         <div className="lds-roller float-none w-100 d-flex justify-content-center mx--1" id="spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     </div>
-                    {casos.length > 0 ? (<Tabla lineas={casos.filter(item => item.statecode == 3)} columnas={COLUMNS} titulo={'Casos Resueltos'} />) : <p className="color-textp-lista fw-bolder m-0">{registros}</p>}
+                    {casos.length > 0 ? (<Tabla lineas={casos.filter(item => item.statecode == 3)} columnas={CASOSRESUELTOS} titulo={'Casos Resueltos'} />) : <p className="color-textp-lista fw-bolder m-0">{registros}</p>}
                 </div>
             </div>
             <div className="modal fade bd-example-modal-xl" id="ModalCaso" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -625,14 +675,14 @@ const Inicio = (props) => {
                                     <div className="row">
                                         <div className="col-4">
                                             <div className="mb-2 p-2">
-                                                <label className="form-label fw-bolder lbl-precalificacion requerido">Título</label>
+                                                <label className="form-label fw-bolder lbl-precalificacion">Título</label>
                                                 <input type="text"
-                                                    id="titulo"
-                                                    name="titulo"
-                                                    className="form-control"
-                                                    onChange={e => setTitulo(e.target.value)}
-                                                    value={titulo}
-                                                    placeholder="titulo..."
+                                                   id="titulo"
+                                                   name="titulo"
+                                                   className="form-control"
+                                                   onChange={e => setTitulo(e.target.value)}
+                                                   value={titulo}
+                                                   placeholder="titulo..."
                                                 />
                                             </div>
                                         </div>
@@ -670,19 +720,22 @@ const Inicio = (props) => {
                                         </div> */}
                                         <div className="col-4">
                                             <div className="mb-2 p-2">
-                                                <label className="form-label fw-bolder lbl-precalificacion requerido">Asunto</label>
-                                                <Select className="form-select titulo-notificacion form-select-lg mb-3 fww-bolder h6"
-                                                    id="asunto"
-                                                    onChange={e => asuntoOnChange (e)}
-                                                    value={asunto}
-                                                    name="colors"
-                                                    options= {asuntoOpciones}
-                                                    className="basic multi-select"
-                                                    ClassNamePrefix="select"
-                                                    placeholder="Elegir..."
-                                                  >
-                                                </Select>
+                                                <label className="form-label fw-bolder lbl-precalificacion requerido">Asunto</label>    
+                                                       <Select className="form-select titulo-notificacion form-select-lg mb-3 fww-bolder h6"
+                                                           id="asuntos"
+                                                           onChange={e => setAsunto (e)}
+                                                           options={opcionesAsunto}
+                                                           name="colors"
+                                                           value={asunto}
+                                                           className="basic multi-select"
+                                                           ClassNamePrefix="select"
+                                                           placeholder="Elegir Asunto..."
+                                                           
+                                                         >
+                                                        </Select >
                                             </div>
+                                                
+
                                         </div>
                                         <div className="col-4">
                                         </div>
@@ -728,6 +781,30 @@ const Inicio = (props) => {
                                             </div>
                                         </div>
                                     </div>
+
+                                    <h6 className="fw-bolder requerido">Resolucion de la Descripción</h6>
+                                    
+                                    <div className="row">
+                                        <div className="col-12">
+                                            <div class="form-group">
+                                                <textarea
+                                                    className="form-control mt-2"
+                                                    id="exampleFormControlTextarea2"
+                                                    rows="3"
+                                                    onChange={e => setDescripcionDeLaResolucion(e.target.value)}
+                                                    value={descripciondelaresolucion}
+                                                    placeholder="resolucion del caso?.."
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                    </div> 
+
+
+
+
+
+
+
                                     <div className="row">
                                         <div className="custom-input-file col-12 mt-4">
                                             {/* <div class="custom-input-file col-md-6 col-sm-6 col-xs-6">
@@ -831,7 +908,7 @@ const Inicio = (props) => {
                                                     <input type="text"
                                                         id="titulo"
                                                         name="titulo"
-                                                        className="form-control"
+                                                        className="form-control desabilitado"
                                                         onChange={e => setTitulo(e.target.value)}
                                                         value={titulo}
                                                         placeholder="titulo..."
@@ -854,7 +931,7 @@ const Inicio = (props) => {
                                                 </Select>
                                             </div>
                                         </div> */}
-                                            <div className="col-6">
+                                            {/* <div className="col-6">
                                                 <div className="mb-2 p-2">
                                                     <label className="form-label fw-bolder lbl-precalificacion requerido">Prioridad</label>
                                                     <Select className="form-select titulo-notificacion form-select-lg mb-3 fw-bolder h6"
@@ -869,20 +946,21 @@ const Inicio = (props) => {
                                                     >
                                                     </Select>
                                                 </div>
-                                            </div>
+                                            </div> */}
 
                                             <div className="col-6">
                                                 <div className="mb-2 p-2">
                                                     <label className="form-label fw-bolder lbl-precalificacion requerido">Asunto</label>
                                                     <Select className="form-select titulo-notificacion form-select-lg mb-3 fw-bolder h6"
-                                                        id="asunto"
-                                                        onChange={e => asuntoOnChange(e)}
-                                                        value={asunto}
-                                                        name="colors"
-                                                        options={asuntoOpciones}
-                                                        className="basic-multi-select"
-                                                        classNamePrefix="select"
-                                                        placeholder="Elegir..."
+                                                     id="asuntos"
+                                                     onChange={e => setAsunto (e)}
+                                                     options={opcionesAsunto}
+                                                     name="colors"
+                                                     value={asunto}
+                                                     className="basic multi-select"
+                                                     ClassNamePrefix="select"
+                                                     placeholder="Elegir Asunto..."
+                                                     
                                                     >
                                                     </Select>
                                                 </div>
@@ -931,6 +1009,26 @@ const Inicio = (props) => {
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                         <h6 className="fw-bolder requerido">Resolución de la Descripción</h6>
+                                        <div className="row">
+                                            <div className="col-12">
+                                                <div class="form-group">
+                                                    <textarea
+                                                        className="form-control mt-2"
+                                                        id="exampleFormControlTextarea1"
+                                                        rows="7"
+                                                        onChange={e => setDescripcionDeLaResolucion(e.target.value)}
+                                                        value={descripciondelaresolucion}
+                                                        placeholder="Cual fue la resolución del caso?..."
+                                                    ></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+ 
+
+
+
                                     </div>
                                     <div className="col-4">
                                         <h6 className="fw-bolder">Actividades</h6>

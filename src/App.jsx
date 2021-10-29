@@ -22,7 +22,7 @@ import Cuenta from './Components/Cuenta';
 import PrecalificacionCrediticia from './Components/PrecalificacionCrediticia';
 import { useSpring } from 'react-spring'
 import RecuperoContrasena from './Components/RecuperoContrasena';
-import RelacionesVinculacion from './Components/RelacionesVinculacion'
+import RelacionesVinculacion from './Components/RelacionesVinculacion';
 
 
 
@@ -31,6 +31,7 @@ function App() {
   //Consantes
   const dispatch = useDispatch()
   const [loggedUser, setLoggedUser] = React.useState(false)
+  
 
   React.useEffect(() => { 
     const fetchUser = () => {

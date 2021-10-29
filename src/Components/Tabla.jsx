@@ -5,10 +5,13 @@ import { useSpring } from 'react-spring'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUp, faArrowDown} from '@fortawesome/free-solid-svg-icons'
 
+
 const Tabla = ({ lineas, columnas, titulo }) => {
     const columns = useMemo(() => columnas, [])
+    const casosResueltos =useMemo(() =>columnas, [])
     const data = useMemo(() => lineas, [])
     const tituloTabla = useMemo(() => titulo)
+    
 
     const fade = useSpring({
         from: {
@@ -35,6 +38,7 @@ const Tabla = ({ lineas, columnas, titulo }) => {
         setGlobalFilter,
     } = useTable({
         columns,
+        casosResueltos,
         data
     },
         useGlobalFilter,
