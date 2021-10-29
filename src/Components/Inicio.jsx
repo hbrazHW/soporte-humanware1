@@ -448,7 +448,7 @@ const Inicio = (props) => {
         setIsFilePicked(true);
     };
     
-
+   console.log(asunto)
     return (
         <animated.div className="container min-vh-100" style={fade}>
             <div className="row mt-3">
@@ -719,6 +719,7 @@ const Inicio = (props) => {
                                             </div>
                                         </div> */}
                                         <div className="col-4">
+                                        
                                             <div className="mb-2 p-2">
                                                 <label className="form-label fw-bolder lbl-precalificacion requerido">Asunto</label>    
                                                        <Select className="form-select titulo-notificacion form-select-lg mb-3 fww-bolder h6"
@@ -733,6 +734,7 @@ const Inicio = (props) => {
                                                            
                                                          >
                                                         </Select >
+                                                        
                                             </div>
                                                 
 
